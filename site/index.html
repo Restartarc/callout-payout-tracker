@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Callout Payout Tracker</title>
+  <meta name="description" content="Every pump.fun callout reward payout, read straight from the Solana chain. Daily totals, who gets paid most, and a lookup for any wallet.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <div class="brand">
+        <span class="dot" aria-hidden="true"></span>
+        <span>Callout Payout Tracker</span>
+      </div>
+      <nav aria-label="Sections">
+        <a href="#daily">Daily</a>
+        <a href="#top">Top wallets</a>
+        <a href="#lookup">Check a wallet</a>
+        <a href="#method">How it works</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Every pump.fun callout payout, straight from the chain.</h1>
+      <p class="lede">pump.fun pays callout rewards in USDC once a day. This site reads every payout from the Solana blockchain, so anyone can see who got paid, how much, and how concentrated it is.</p>
+      <p class="meta" id="coverage">Loading payout data…</p>
+    </section>
+
+    <section aria-labelledby="latest-h">
+      <h2 id="latest-h">Latest daily batch <span class="sub" id="latest-date"></span></h2>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <section id="daily" aria-labelledby="daily-h">
+      <h2 id="daily-h">Paid per day</h2>
+      <div class="panel">
+        <div id="chart" class="chart" role="img" aria-label="Total USDC paid per daily batch"></div>
+        <div class="table-wrap">
+          <table class="num-table" id="batches">
+            <thead><tr><th scope="col">Day (UTC)</th><th scope="col">Wallets paid</th><th scope="col">Total</th><th scope="col">Median</th><th scope="col">Top 10% from</th><th scope="col">Largest</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="bands-h">
+      <h2 id="bands-h">How big the payouts are <span class="sub">latest batch</span></h2>
+      <div class="panel" id="bands"></div>
+    </section>
+
+    <section id="top" aria-labelledby="top-h">
+      <h2 id="top-h">Most-paid wallets</h2>
+      <div class="tabs" role="tablist" aria-label="Period">
+        <button role="tab" id="tab-latest" aria-selected="true" aria-controls="top-table">Latest batch</button>
+        <button role="tab" id="tab-all" aria-selected="false" aria-controls="top-table">All tracked days</button>
+      </div>
+      <p class="meta" id="conc"></p>
+      <div class="table-wrap">
+        <table class="num-table" id="top-table" role="tabpanel">
+          <thead><tr><th scope="col">#</th><th scope="col">Wallet</th><th scope="col">Received</th><th scope="col">Payouts</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="lookup" aria-labelledby="lookup-h">
+      <h2 id="lookup-h">Check a wallet</h2>
+      <form id="lookup-form" class="lookup" autocomplete="off">
+        <label for="addr" class="visually-hidden">Solana wallet address</label>
+        <input id="addr" name="addr" type="text" inputmode="text" spellcheck="false" placeholder="Paste a Solana wallet address" required>
+        <button type="submit">Check payouts</button>
+      </form>
+      <div id="lookup-result" aria-live="polite"></div>
+    </section>
+
+    <section id="method" aria-labelledby="method-h">
+      <h2 id="method-h">How it works, and what it can't tell you</h2>
+      <div class="prose">
+        <h3>Where the numbers come from</h3>
+        <p>pump.fun pays callout rewards as plain USDC transfers from one wallet, in a single batch each evening (around 19:00–21:00 UTC, a few thousand transfers in under ten minutes). We identified the wallet by matching a reward shown in the pump.fun app to its on-chain transfer, to the cent:</p>
+        <ul id="evidence"></ul>
+        <p>Every payout on this site links to its transaction on Solscan, so you can check any number yourself. A payout's day is the UTC day its batch started.</p>
+        <h3>What this does not show</h3>
+        <ul>
+          <li><strong>Whether payouts are fair.</strong> pump.fun says rewards depend on how much your followers profit, pay less for low-cap coins and cut back high-frequency callers, and the exact formula is private. Big differences in pay are expected under those rules, so unequal pay alone is not evidence of favouritism.</li>
+          <li><strong>Which callouts earned a payout.</strong> The chain shows the transfer, not the reason. Perps and prediction-market callout rewards may come from the same wallet.</li>
+          <li><strong>Who owns a wallet.</strong> Addresses are shown as they are. Nothing here says a wallet belongs to any person.</li>
+          <li><strong>Payouts from other wallets.</strong> Only the payout wallet listed above is tracked. If pump.fun adds or changes wallets, totals will be incomplete until it is added.</li>
+        </ul>
+        <h3>Coming next</h3>
+        <p>A caller leaderboard that compares what each caller's followers made with what the caller was paid. It needs reliable callout records first, and will appear here only once those are in place.</p>
+        <p class="meta">Raw data: <a href="data/summary.json">summary.json</a>. Found a mistake? Every row has its transaction link; send it to us and we will check it.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <span id="generated"></span>
+    <span>Not affiliated with pump.fun. Not financial advice.</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

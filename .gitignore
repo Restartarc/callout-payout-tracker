@@ -1,0 +1,7 @@
+target/
+.env
+payouts-out/
+site/data/
+.claude/
+# Private working notes, kept out of the public repo.
+DESIGN.md

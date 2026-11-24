@@ -1,0 +1,16 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      # The backfill crate needs RocksDB and the Solana stack; it is built
+      # separately (see README), so CI tests the core and the payout tracker.
+      - run: cargo test -p callout-board -p payouts

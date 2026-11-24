@@ -1,0 +1,77 @@
+# Reads pump.fun's daily callout payout batch, keeps the history on the
+# `data` branch, rebuilds the site and publishes it to GitHub Pages.
+#
+# Needs one repository secret: HELIUS_RPC_URL (your RPC endpoint with key).
+# Pages must be set to "GitHub Actions" (Settings > Pages > Source).
+name: Update payouts
+
+on:
+  schedule:
+    - cron: "15 21 * * *"   # after the evening batch (seen 19:15-20:50 UTC)
+    - cron: "45 23 * * *"   # second pass, in case a batch runs late
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: payouts
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --release -p payouts
+
+      - name: Restore saved payout data (data branch)
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          remote="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads origin data >/dev/null; then
+            git clone --depth 1 --branch data "$remote" ../data
+          else
+            mkdir -p ../data && git -C ../data init -b data && git -C ../data remote add origin "$remote"
+          fi
+
+      - name: Ingest new payouts, then continue history
+        env:
+          RPC_URL: ${{ secrets.HELIUS_RPC_URL }}
+        run: |
+          test -n "$RPC_URL" || { echo "Set the HELIUS_RPC_URL repository secret"; exit 1; }
+          ./target/release/payouts ingest --rps 8 --workers 8 --max-minutes 300 --out ../data/payouts-out
+
+      - name: Save payout data
+        run: |
+          cd ../data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "Payout data $(date -u +%F_%H%M)"
+          git push origin HEAD:data
+
+      - name: Build site data
+        run: ./target/release/payouts site --out ../data/payouts-out --site site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

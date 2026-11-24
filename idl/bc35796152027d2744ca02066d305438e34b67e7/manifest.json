@@ -1,0 +1,7 @@
+{
+  "repo": "pump-fun/pump-public-docs",
+  "commit": "bc35796152027d2744ca02066d305438e34b67e7",
+  "committed_at": "2026-11-20T21:34:02Z",
+  "valid_from_slot": null,
+  "note": "The repo does not say when each IDL went live on-chain. Decoding history from before this commit needs older commits."
+}
