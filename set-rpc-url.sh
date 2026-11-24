@@ -15,8 +15,16 @@ printf '\n'
 # markers, so strip every control sequence anywhere, then join the pieces.
 url=$(printf '%s' "$raw" | LC_ALL=C tr -d '\033\r\n\t ' | sed -E 's/\[[0-9;?]*[A-Za-z~]//g' | grep -Eo 'https://[A-Za-z0-9._:/?#=&%-]+' | head -n 1)
 if [ -z "$url" ]; then
-  echo "No https:// URL found in what was pasted - nothing saved. Run this again."
-  exit 1
+  # Just a Helius API key (a UUID) pasted on its own: build the endpoint.
+  key=$(printf '%s' "$raw" | LC_ALL=C tr -d '\033\r\n\t ' | sed -E 's/\[[0-9;?]*[A-Za-z~]//g' \
+    | grep -Eoi '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}' | head -n 1)
+  if [ -n "$key" ]; then
+    url="https://mainnet.helius-rpc.com/?api-key=$key"
+    echo "Got a Helius API key on its own; using the Helius mainnet endpoint."
+  else
+    echo "Didn't find an https:// URL or a Helius API key in what was pasted - nothing saved. Run this again."
+    exit 1
+  fi
 fi
 
 umask 077

@@ -248,6 +248,11 @@ fn ingest(a: &[String], wallet: &str, out: &Path) -> Result<()> {
     let mut st: State = std::fs::read(&state_path).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
     let reg = Registry::load(&idl_dir())?;
     let mut rpc = Rpc::new(rps);
+    // Payouts happen on mainnet; a devnet/testnet endpoint would just find nothing.
+    let host = redact(&rpc.url).to_lowercase();
+    if host.contains("devnet") || host.contains("testnet") {
+        bail!("RPC_URL points at {} - payouts are on mainnet. Use the mainnet endpoint (for Helius: https://mainnet.helius-rpc.com/?api-key=...).", redact(&rpc.url));
+    }
     let started = Instant::now();
     eprintln!("RPC {} at up to {rps} req/s over {workers} workers, batch {batch}; wallet {wallet}; since {}", redact(&rpc.url), utc(since));
     let pool = Pool { rps, workers, batch };
