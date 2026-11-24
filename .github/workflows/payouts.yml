@@ -10,6 +10,11 @@ on:
     - cron: "15 21 * * *"   # after the evening batch (seen 19:15-20:50 UTC)
     - cron: "45 23 * * *"   # second pass, in case a batch runs late
   workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Minutes to spend fetching before publishing (scheduled runs use 300)"
+        required: false
+        default: "300"
 
 permissions:
   contents: write
@@ -51,9 +56,10 @@ jobs:
       - name: Ingest new payouts, then continue history
         env:
           RPC_URL: ${{ secrets.HELIUS_RPC_URL }}
+          MINUTES: ${{ github.event.inputs.minutes || '300' }}
         run: |
           test -n "$RPC_URL" || { echo "Set the HELIUS_RPC_URL repository secret"; exit 1; }
-          ./target/release/payouts ingest --rps 8 --workers 8 --max-minutes 300 --out ../data/payouts-out
+          ./target/release/payouts ingest --rps 8 --workers 8 --max-minutes "${MINUTES:-300}" --out ../data/payouts-out
 
       - name: Save payout data
         run: |
