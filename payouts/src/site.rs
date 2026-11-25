@@ -90,6 +90,15 @@ pub fn build(out: &Path, site: &Path) -> Result<Value> {
     let state: Value = std::fs::read(out.join(format!("state-{}.json", PAYOUT_WALLETS[0].0)))
         .ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or(Value::Null);
 
+    // The newest batch may still be running if its last payout falls within
+    // one batch gap (30 min) of when payouts were last listed.
+    let checked_at = state["head_checked_at"].as_i64();
+    let in_progress = match (latest, checked_at) {
+        (Some(b), Some(t)) => b.end > t - 1800,
+        (Some(_), None) => true,
+        _ => false,
+    };
+
     let summary = json!({
         "generated_at": std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs(),
         "payout_wallets": PAYOUT_WALLETS.iter().map(|(w, why)| json!({"wallet": w, "evidence": why})).collect::<Vec<_>>(),
@@ -97,12 +106,14 @@ pub fn build(out: &Path, site: &Path) -> Result<Value> {
             "from": pays.iter().filter_map(|r| r.block_time).min(),
             "to": pays.iter().filter_map(|r| r.block_time).max(),
             "history_complete": state["backfill_done"].as_bool().unwrap_or(false),
+            "checked_at": checked_at,
             "payouts": pays.len(),
             "wallets": totals.len(),
         },
         "batches": all_batches.iter().map(batch_json).collect::<Vec<_>>(),
         "latest": latest.map(|b| json!({
             "batch": batch_json(b),
+            "in_progress": in_progress,
             "concentration": concentration(&latest_totals),
             "bands": bands(&latest_rows.iter().map(|r| r.amount).collect::<Vec<_>>()),
             "top": top(&latest_totals, &latest_counts, 50),

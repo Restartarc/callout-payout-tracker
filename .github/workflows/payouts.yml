@@ -7,12 +7,17 @@ name: Update payouts
 
 on:
   schedule:
-    - cron: "30 22 * * *"   # after the evening batch (seen 19:15-21:05 UTC)
-    - cron: "45 23 * * *"   # second pass, in case a batch runs late
+    # Hourly checks through the evening, so the site follows the batch on its
+    # own whenever it starts (seen 19:15-21:05 UTC). A batch caught mid-run is
+    # tagged "still arriving" and completed by the next check.
+    - cron: "10 19-23 * * *"
+    - cron: "10 0-2 * * *"
+    # One long run a day, after the checks, to keep filling in older history.
+    - cron: "30 3 * * *"
   workflow_dispatch:
     inputs:
       minutes:
-        description: "Minutes to spend fetching before publishing (scheduled runs use 300)"
+        description: "Minutes to spend fetching before publishing (hourly checks use 45, the daily history run 300)"
         required: false
         default: "300"
 
@@ -56,7 +61,7 @@ jobs:
       - name: Ingest new payouts, then continue history
         env:
           RPC_URL: ${{ secrets.HELIUS_RPC_URL }}
-          MINUTES: ${{ github.event.inputs.minutes || '300' }}
+          MINUTES: ${{ github.event.inputs.minutes || (github.event.schedule == '30 3 * * *' && '300') || '45' }}
         run: |
           test -n "$RPC_URL" || { echo "Set the HELIUS_RPC_URL repository secret"; exit 1; }
           ./target/release/payouts ingest --rps 8 --workers 8 --max-minutes "${MINUTES:-300}" --out ../data/payouts-out

@@ -61,6 +61,7 @@
     if (!L) return;
     const b = L.batch, c = L.concentration;
     $("#latest-date").textContent = b.date;
+    if (L.in_progress) $("#latest-date").append(el("span", { class: "tag", text: "still arriving" }));
     $("#cards").replaceChildren(
       card("Total paid", usdShort(b.total), usd(b.total, 2) + " USDC"),
       card("Wallets paid", int(b.wallets), int(b.payouts) + " transfers"),
@@ -89,12 +90,15 @@
       svg.append(mk("text", { x: 0, y: y + 4 }, usdShort(max * f)));
     }
     const n = bs.length, slot = (W - padL) / Math.max(n, 1), bw = Math.max(Math.min(slot * 0.7, 60), 2);
+    const arriving = !!(s.latest && s.latest.in_progress);
+    const note = (i) => i === 0 && !s.coverage.history_complete ? "partial: history still loading"
+      : i === n - 1 && arriving ? "still arriving: the batch was running at the last check" : "";
     bs.forEach((b, i) => {
       const h = (H - padT - padB) * (b.total / max);
       const x = padL + i * slot + (slot - bw) / 2;
-      const partial = i === 0 && !s.coverage.history_complete;
-      const r = mk("rect", { class: "bar" + (partial ? " partial" : ""), x, y: H - padB - h, width: bw, height: Math.max(h, 1), rx: 3 });
-      r.append(mk("title", {}, `${b.date}: ${usd(b.total, 2)} to ${int(b.wallets)} wallets${partial ? " (partial: history still loading)" : ""}`));
+      const why = note(i);
+      const r = mk("rect", { class: "bar" + (why ? " partial" : ""), x, y: H - padB - h, width: bw, height: Math.max(h, 1), rx: 3 });
+      r.append(mk("title", {}, `${b.date}: ${usd(b.total, 2)} to ${int(b.wallets)} wallets${why ? " (" + why + ")" : ""}`));
       svg.append(r);
       if (n <= 14 || i % Math.ceil(n / 14) === 0) svg.append(mk("text", { x: x + bw / 2, y: H - 8, "text-anchor": "middle" }, b.date.slice(5)));
     });
@@ -102,9 +106,9 @@
 
     const tb = $("#batches tbody");
     tb.replaceChildren(...bs.slice().reverse().map((b, i, arr) => {
-      const partial = i === arr.length - 1 && !s.coverage.history_complete;
       const d = el("td", { text: b.date });
-      if (partial) d.append(el("span", { class: "tag", text: "partial" }));
+      if (i === arr.length - 1 && !s.coverage.history_complete) d.append(el("span", { class: "tag", text: "partial" }));
+      else if (i === 0 && arriving) d.append(el("span", { class: "tag", text: "still arriving" }));
       return el("tr", {}, d, el("td", { text: int(b.wallets) }), el("td", { text: usd(b.total, 0) }),
         el("td", { text: usd(b.median, 2) }), el("td", { text: usd(b.p90, 2) }), el("td", { text: usd(b.max, 0) }));
     }));

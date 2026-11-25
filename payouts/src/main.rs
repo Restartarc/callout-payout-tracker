@@ -201,6 +201,11 @@ struct State {
     txs: u64,
     payout_rows: u64,
     funding_rows: u64,
+    /// Unix time when the newest payouts were last listed: data is complete up
+    /// to this moment, so a batch whose last payout is close to it may still be
+    /// running.
+    #[serde(default)]
+    head_checked_at: Option<i64>,
 }
 
 fn date_to_unix(d: &str) -> Result<i64> {
@@ -258,6 +263,7 @@ fn ingest(a: &[String], wallet: &str, out: &Path) -> Result<()> {
     let pool = Pool { rps, workers, batch };
 
     let mut pages_this_run = 0u64;
+    let run_started_at = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH)?.as_secs() as i64;
     // Head pass: new payouts since the last run (pages newest-first until the
     // newest signature we already have).
     if let Some(newest) = st.newest.clone() {
@@ -274,9 +280,12 @@ fn ingest(a: &[String], wallet: &str, out: &Path) -> Result<()> {
             process_page(&sigs, wallet, &reg, &pool, &chunks, &mut st)?;
             pages_this_run += 1;
             eprintln!("head: page {pages_this_run}, {} signatures", sigs.len());
-            if sigs.len() < page_size || started.elapsed().as_secs_f64() / 60.0 > max_minutes { break; }
+            // No time limit here: stopping early would move `newest` past
+            // pages never fetched, losing them for good.
+            if sigs.len() < page_size { break; }
         }
         if let Some(f) = first_new { st.newest = Some(f); }
+        st.head_checked_at = Some(run_started_at);
         save(&state_path, &st)?;
     }
     // Backfill pass: older history, down to --since.
@@ -293,6 +302,7 @@ fn ingest(a: &[String], wallet: &str, out: &Path) -> Result<()> {
         let keep: Vec<Value> = all.iter().filter(|s| s["blockTime"].as_i64().map(|t| t >= since).unwrap_or(true)).cloned().collect();
         if st.newest.is_none() {
             st.newest = all[0]["signature"].as_str().map(String::from);
+            st.head_checked_at = Some(run_started_at);
         }
         process_page(&keep, wallet, &reg, &pool, &chunks, &mut st)?;
         st.cursor = all.last().and_then(|s| s["signature"].as_str()).map(String::from);
