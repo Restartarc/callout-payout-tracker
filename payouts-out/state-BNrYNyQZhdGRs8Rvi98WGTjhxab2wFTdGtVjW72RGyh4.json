@@ -1,10 +1,10 @@
 {
   "newest": "4Yi7AgxuBG3GabTLGoGJWNFD8bxrDAFgRFGkBc3Fhh5Ax2ZQMc4UXnvRNDkxhT4d7t4RfbKPzTmCUy3q3dJzsMrW",
-  "cursor": "3evCkGLyo6c9RKtTaoF2UsgE5Grx6vqobePfgexf7y3XoLYF1Gqpz9HQALMaT86fDPrVcP8UsGWhRZ2NmWBMGMYV",
+  "cursor": "5GgLFNpv5AgjFogZSte5Y9bCQ6oemEeCpmo8icNk13jBmLEohrzvjYeP9EyCXBpbhvHQQGoDcyWfzsJsL863Q7PV",
   "backfill_done": false,
-  "pages": 162,
-  "txs": 159827,
-  "payout_rows": 146933,
-  "funding_rows": 12896,
-  "head_checked_at": 1795636754
+  "pages": 174,
+  "txs": 171355,
+  "payout_rows": 146937,
+  "funding_rows": 24422,
+  "head_checked_at": 1795640301
 }
