@@ -113,7 +113,7 @@ A static website showing every pump.fun callout payout:
 It also explains what the data can't show: whether pay is fair, which callout earned a payout, or who owns a wallet.
 
 How it updates (`.github/workflows/payouts.yml`):
-1. Every evening at 21:15 UTC, with a second pass at 23:45, GitHub Actions builds `payouts`.
+1. Every evening at 22:30 UTC, with a second pass at 23:45, GitHub Actions builds `payouts`.
 2. It restores the payout data from the `data` branch, then ingests new payouts and fills in history for up to 5 hours.
 3. It commits the data back to the `data` branch, builds the site data and deploys `site/` to GitHub Pages.
 4. History fills in over a few runs; the site says so until it's complete.

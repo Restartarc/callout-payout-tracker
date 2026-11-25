@@ -7,7 +7,7 @@ name: Update payouts
 
 on:
   schedule:
-    - cron: "15 21 * * *"   # after the evening batch (seen 19:15-20:50 UTC)
+    - cron: "30 22 * * *"   # after the evening batch (seen 19:15-21:05 UTC)
     - cron: "45 23 * * *"   # second pass, in case a batch runs late
   workflow_dispatch:
     inputs:
