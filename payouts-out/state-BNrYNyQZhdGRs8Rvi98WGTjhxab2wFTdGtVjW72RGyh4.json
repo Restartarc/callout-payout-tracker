@@ -1,10 +1,10 @@
 {
-  "newest": "2gUXLNbm4AtL2nT6EMiRxwAXFgB3eLbgapC3snHtTTuog4zaa82q795a85h19z25vqQ2Burx7kUzZRKr2Fa8CsPy",
-  "cursor": "7E4Rwv7dnCtrpkcnPCqWRXFe17Yp1eLHViHAqwUkvy2oJgYfqwqXaXovKSXKLRuEkfdpZsH5v6an7PFwgvHhjgj",
+  "newest": "35ChYtSvfHLDKo1Dfjs7kmRkAnPGXyhSsYGGG3r1gybmpMwZAsVyzyzEZHmzAdfdGpZc6Gb95Aw3PQbjicKigdkP",
+  "cursor": "4WgPC7hzaKW118tKSxTy6DwLFkSWsmdRuPG8kUp1aV4iuu7DapzbyJMJMD6xzSUxJVAFDq7WpycuNfL2ut5Nr9WU",
   "backfill_done": false,
-  "pages": 622,
-  "txs": 593842,
-  "payout_rows": 156331,
-  "funding_rows": 437610,
-  "head_checked_at": 1795840253
+  "pages": 634,
+  "txs": 605064,
+  "payout_rows": 160862,
+  "funding_rows": 444304,
+  "head_checked_at": 1795895729
 }
